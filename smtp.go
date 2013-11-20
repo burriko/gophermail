@@ -11,11 +11,6 @@ import (
 // Based heavily on smtp.SendMail().
 func SendMail(addr string, a smtp.Auth, msg *Message) error {
 
-	msgBytes, err := msg.Bytes()
-	if err != nil {
-		return err
-	}
-
 	c, err := smtp.Dial(addr)
 	if err != nil {
 		return err
@@ -32,6 +27,19 @@ func SendMail(addr string, a smtp.Auth, msg *Message) error {
 				return err
 			}
 		}
+	}
+
+	err = SendMailViaConnection(c, msg)
+	if err != nil {
+		return err
+	}
+	return c.Quit()
+}
+
+func SendMailViaConnection(c *smtp.Client, msg *Message) error {
+	msgBytes, err := msg.Bytes()
+	if err != nil {
+		return err
 	}
 
 	// Sender
@@ -73,7 +81,7 @@ func SendMail(addr string, a smtp.Auth, msg *Message) error {
 	if err != nil {
 		return err
 	}
-	return c.Quit()
+	return nil
 }
 
 // rcpt parses the specified list of RFC 5322 addresses
